@@ -1,4 +1,4 @@
-# PCP_PEOJECT
+# PCP_PROJECT
 
 Implementation of SprayList: A Scalable Relaxed Priority Queue (http://www.mit.edu/~jerryzli/SprayList-CR.pdf)
 
