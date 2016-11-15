@@ -1,23 +1,26 @@
 #include <atomic>
+#include <iostream>
 using namespace std;
 
 template <typename T>
 class AtomicMarkableReference {
-
+public:
 	/* class: */
 	template <typename U>
 	class ReferenceBooleanPair {
 		public:
 		U *reference;
 		bool mark;
-		ReferenceBooleanPair(U* r, bool b) {
+		ReferenceBooleanPair(U *r, bool b) {
 			reference = r; mark = b;
 		}
 	};
 
 	atomic< ReferenceBooleanPair<T>* > atomic_ref;
 
-public:
+	AtomicMarkableReference() {
+		AtomicMarkableReference(0, false);
+	}
 	AtomicMarkableReference(T *init_ref, bool init_mark) {
 		atomic_ref.store(new ReferenceBooleanPair<T>(init_ref, init_mark));	
 	}
@@ -32,8 +35,7 @@ public:
 
 	T* get(bool *mark_holder) {
 		ReferenceBooleanPair<T> *p = atomic_ref.load();
-		if (mark_holder != 0)
-			*mark_holder = p->mark;
+		*mark_holder = p->mark;
 		return p->reference;
 	}
 
@@ -43,7 +45,7 @@ public:
 		return expRef == curr->reference && 
 			expMark == curr->mark &&
 			((newRef == curr->reference && newMark == curr->mark) || 
-			 atomic_ref.compare_exchange_weak(curr, new AtomicMarkableReference<T>(newRef, newMark)));
+			 atomic_ref.compare_exchange_weak(curr, new ReferenceBooleanPair<T>(newRef, newMark)));
 	}
 
 	bool compareAndSet( T* expRef, T* newRef, 
@@ -52,14 +54,11 @@ public:
 		return expRef == curr->reference && 
 			expMark == curr->mark &&
 			((newRef == curr->reference && newMark == curr->mark) || 
-			 atomic_ref.compare_exchange_strong(curr, new AtomicMarkableReference<T>(newRef, newMark)));
+			 atomic_ref.compare_exchange_strong(curr, new ReferenceBooleanPair<T>(newRef, newMark)));
 	}
 
 	void set(T* newRef, bool newMark) {
-		ReferenceBooleanPair<T> *curr = atomic_ref.load();
-		if (newRef != curr->reference || newMark != curr->mark) {
-			atomic_ref.store(new ReferenceBooleanPair<T>(newRef, newMark));
-		}
+		atomic_ref.store(new ReferenceBooleanPair<T>(newRef, newMark));
 	}
 
 	bool attemptMark(T* expRef, bool newMark) {
