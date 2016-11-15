@@ -10,7 +10,7 @@ class AtomicMarkableReference {
 		public:
 		U *reference;
 		bool bit;
-		ReferenceBooleanPair(U r, bool b) {
+		ReferenceBooleanPair(U* r, bool b) {
 			reference = r; bit = b;
 		}
 	};
