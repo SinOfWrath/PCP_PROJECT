@@ -38,22 +38,31 @@ public:
 
 	bool weakCompareAndSet( T expRef, T newRef, 
 			bool expMark, bool newMark ) {
-		ReferenceBooleanPair<T> curr = atomic_ref.load();
+		ReferenceBooleanPair<T> *curr = atomic_ref.load();
 		return expRef == curr->reference && 
 			expMark == curr->mark &&
 			((newRef == curr->reference && newMark == curr->mark) || 
 			 atomic_ref.compare_exchange_weak(curr, memory_order_seq_cst, memory_order_relaxed));
 	}
 
+	bool compareAndSet( T expRef, T newRef, 
+			bool expMark, bool newMark ) {
+		ReferenceBooleanPair<T> *curr = atomic_ref.load();
+		return expRef == curr->reference && 
+			expMark == curr->mark &&
+			((newRef == curr->reference && newMark == curr->mark) || 
+			 atomic_ref.compare_exchange_strong(curr, memory_order_seq_cst, memory_order_relaxed));
+	}
+
 	void set(T newRef, bool newMark) {
-		ReferenceBooleanPair<T> curr = atomic_ref.load();
+		ReferenceBooleanPair<T> *curr = atomic_ref.load();
 		if (newRef != curr->reference || newMark != curr->mark) {
 			atomic_ref.store(new ReferenceBooleanPair<T>(newRef, newMark));
 		}
 	}
 
 	bool attemptMark(T expRef, bool newMark) {
-		ReferenceBooleanPair<T> curr = atomic_ref.load();
+		ReferenceBooleanPair<T> *curr = atomic_ref.load();
 		return expRef == curr->reference && 
 			(newMark == curr->bit ||
 			 atomic_ref.compare_exchange_strong(curr, new ReferenceBooleanPair<T>(expRef, newMark)));
