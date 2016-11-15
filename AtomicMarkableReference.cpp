@@ -42,7 +42,7 @@ public:
 		return expRef == curr->reference && 
 			expMark == curr->mark &&
 			((newRef == curr->reference && newMark == curr->mark) || 
-			 compare_exchange_weak(&atomic_ref, &curr, new AtomicMarkableReference<T>(newRef, newMark)));
+			 atomic_ref.compare_exchange_weak(curr, new AtomicMarkableReference<T>(newRef, newMark)));
 	}
 
 	bool compareAndSet( T* expRef, T* newRef, 
@@ -51,7 +51,7 @@ public:
 		return expRef == curr->reference && 
 			expMark == curr->mark &&
 			((newRef == curr->reference && newMark == curr->mark) || 
-			 compare_exchange_strong(&atomic_ref, &curr, new AtomicMarkableReference<T>(newRef, newMark)));
+			 atomic_ref.compare_exchange_strong(curr, new AtomicMarkableReference<T>(newRef, newMark)));
 	}
 
 	void set(T* newRef, bool newMark) {
@@ -65,6 +65,6 @@ public:
 		ReferenceBooleanPair<T>* curr = atomic_ref.load();
 		return expRef == curr->reference && 
 			(newMark == curr->mark ||
-			 compare_exchange_strong(&atomic_ref, &curr, new ReferenceBooleanPair<T>(expRef, newMark)));
+			 atomic_ref.compare_exchange_strong(curr, new ReferenceBooleanPair<T>(expRef, newMark)));
 	}
 };
