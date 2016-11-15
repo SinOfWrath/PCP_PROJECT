@@ -54,7 +54,7 @@ public:
 			 compare_exchange_strong(&atomic_ref, &curr, new AtomicMarkableReference<T>(newRef, newMark)));
 	}
 
-	void set(T newRef, bool newMark) {
+	void set(T* newRef, bool newMark) {
 		ReferenceBooleanPair<T> *curr = atomic_ref.load();
 		if (newRef != curr->reference || newMark != curr->mark) {
 			atomic_ref.store(new ReferenceBooleanPair<T>(newRef, newMark));
